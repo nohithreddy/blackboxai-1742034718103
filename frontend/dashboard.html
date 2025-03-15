@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Platform - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .drag-drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .drag-drop-zone.dragover {
+            border-color: #6366f1;
+            background-color: #eef2ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold text-gray-800">AI Model Platform</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="chat.html" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-comments"></i> Chat
+                    </a>
+                    <span id="userRole" class="text-gray-600"></span>
+                    <button onclick="logout()" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <!-- File Upload Section -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">Upload Dataset</h2>
+                <div id="dropZone" class="drag-drop-zone rounded-lg p-8 text-center cursor-pointer">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600">Drag and drop your file here or click to browse</p>
+                    <input type="file" id="fileInput" class="hidden">
+                    <p id="fileName" class="mt-2 text-sm text-gray-500"></p>
+                </div>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">Select Model</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="model" value="ann" class="mr-2">
+                        <span>Artificial Neural Network (ANN)</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="model" value="cnn" class="mr-2">
+                        <span>Convolutional Neural Network (CNN)</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="model" value="linear" class="mr-2">
+                        <span>Linear Regression</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="model" value="logistic" class="mr-2">
+                        <span>Logistic Regression</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="model" value="lstm" class="mr-2">
+                        <span>LSTM</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="model" value="transformers" class="mr-2">
+                        <span>Transformers</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Execution Mode -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">Execution Mode</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="mode" value="cpu" class="mr-2">
+                        <span>CPU</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="mode" value="gpu" class="mr-2">
+                        <span>GPU</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="mode" value="pyspark" class="mr-2">
+                        <span>PySpark</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Run Button -->
+            <div class="text-center">
+                <button onclick="runModel()" id="runButton" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                    <i class="fas fa-play mr-2"></i>Run Model
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="mt-8 hidden">
+                <h2 class="text-lg font-semibold mb-4">Results</h2>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="mb-2">
+                        <span class="font-medium">Timestamp:</span>
+                        <span id="timestamp" class="ml-2"></span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Output:</span>
+                        <pre id="output" class="mt-2 whitespace-pre-wrap bg-white p-4 rounded border"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        window.onload = function() {
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userRole').textContent = `Role: ${user.role}`;
+            setupRoleBasedUI(user.role);
+        };
+
+        function setupRoleBasedUI(role) {
+            const isStudent = role === 'student';
+            const adminElements = document.querySelectorAll('.admin-only');
+            
+            adminElements.forEach(elem => {
+                elem.style.display = isStudent ? 'none' : 'block';
+            });
+        }
+
+        // File upload handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                fileName.textContent = `Selected file: ${files[0].name}`;
+            }
+        }
+
+        // Model execution
+        async function runModel() {
+            const file = fileInput.files[0];
+            const model = document.querySelector('input[name="model"]:checked')?.value;
+            const mode = document.querySelector('input[name="mode"]:checked')?.value;
+
+            if (!file || !model || !mode) {
+                alert('Please select a file, model, and execution mode');
+                return;
+            }
+
+            // Show loading state
+            const runButton = document.getElementById('runButton');
+            runButton.disabled = true;
+            runButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('model', model);
+            formData.append('mode', mode);
+
+            try {
+                const response = await fetch('http://localhost:8001/api/run', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                const results = document.getElementById('results');
+                const timestamp = document.getElementById('timestamp');
+                const output = document.getElementById('output');
+
+                timestamp.textContent = data.timestamp;
+                output.textContent = data.output;
+                results.classList.remove('hidden');
+            } catch (error) {
+                alert('Error: ' + error.message);
+                console.error('Error:', error);
+            } finally {
+                runButton.disabled = false;
+                runButton.innerHTML = '<i class="fas fa-play mr-2"></i>Run Model';
+            }
+        }
+
+        function logout() {
+            fetch('http://localhost:8001/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(() => {
+                sessionStorage.removeItem('user');
+                window.location.href = 'index.html';
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+                // Fallback: clear session and redirect anyway
+                sessionStorage.removeItem('user');
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
+</body>
+</html>
